@@ -1,0 +1,11 @@
+keypsake
+Copyright 2026 Paymanshu Sharma (https://github.com/Paymanshus)
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+If you redistribute it or a derivative, keep this NOTICE and credit the original
+project: https://github.com/Paymanshus/keypsake
+
+Bundled fonts are licensed separately under the SIL Open Font License 1.1
+(see Resources/Fonts/OFL-*.txt):
+  - Redaction, Copyright 2019 MCKL Inc.
+  - Martian Grotesk and Martian Mono, Copyright The Martian Grotesk/Mono Project Authors (Evil Martians)

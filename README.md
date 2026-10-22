@@ -11,6 +11,18 @@ Everything you type, kept. A small macOS app that quietly saves what you type in
   <img src="docs/typed.png" alt="Typed tab: an email draft that was cleared, with the version before the loss preselected">
 </picture>
 
+## Download
+
+Grab **keypsake-x.y.z.dmg** from [Releases](https://github.com/Paymanshus/keypsake/releases/latest), open it and drag keypsake into Applications. Universal build (Apple Silicon and Intel), macOS 14 or later.
+
+This build is not notarized by Apple yet, so the first launch needs one extra step:
+
+1. Open keypsake. macOS says it can't verify the developer. Click **Done**.
+2. Go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to keypsake.
+3. Turn on **Accessibility** for keypsake when asked. That's the only permission it needs.
+
+Updates signed with the same identity keep your Accessibility setting.
+
 ## What it does
 
 - **Typed.** One entry per text box you typed into, with the app or website, its real icon and the window title. Only what you typed this time is kept: text that was already in a note or document stays out.
@@ -60,6 +72,10 @@ Design: Redaction (display), Martian Grotesk (UI) and Martian Mono (meta), all S
 
 Screenshots come from `keypsake --demo --snap docs` (made-up data, nothing recorded). The motion graphic is rendered by `Resources/Video/render_video.swift`: [keypsake.mp4](docs/keypsake.mp4).
 
-## Distributing
+## Releasing
 
-To ship builds other people can open without warnings, sign with an Apple Developer ID and notarize. Users then only grant Accessibility, once, and it carries across updates.
+`./scripts/release.sh` builds the universal app and `build/keypsake-<version>.dmg` (version from `Resources/Info.plist`). Signing with an Apple Developer ID and notarizing would remove the "Open Anyway" step.
+
+## License
+
+[Apache License 2.0](LICENSE). Use, modify and redistribute freely; keep the [NOTICE](NOTICE) crediting the original project. Bundled fonts are under the SIL Open Font License 1.1.
