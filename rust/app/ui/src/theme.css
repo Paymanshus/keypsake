@@ -1,0 +1,81 @@
+/* Palette and type from Theme.swift. Keep both in step (COMPATIBILITY.md). */
+@font-face { font-family: "Martian Grotesk"; font-weight: 400; src: url("/fonts/MartianGrotesk-Regular.otf"); }
+@font-face { font-family: "Martian Grotesk"; font-weight: 500; src: url("/fonts/MartianGrotesk-Medium.otf"); }
+@font-face { font-family: "Martian Mono"; font-weight: 400; src: url("/fonts/MartianMono-Regular.otf"); }
+@font-face { font-family: "Martian Mono"; font-weight: 500; src: url("/fonts/MartianMono-Medium.otf"); }
+@font-face { font-family: "Redaction"; font-weight: 400; src: url("/fonts/Redaction-Regular.otf"); }
+
+:root {
+  --ground: #eceef2;
+  --ink: #1b1c22;
+  --carbon: #3b3fc4;
+  --ghost: #b8bbd3;
+  --cliff: #d98a2b;
+  --cliff-text: #b86e14;
+  --ink-soft: color-mix(in srgb, var(--ink) 62%, transparent);
+  --ink-faint: color-mix(in srgb, var(--ink) 42%, transparent);
+  --rule: color-mix(in srgb, var(--ghost) 70%, transparent);
+  --rule-half: color-mix(in srgb, var(--ghost) 35%, transparent);
+  --wash: color-mix(in srgb, var(--ghost) 28%, transparent);
+  --body: "Martian Grotesk", "Segoe UI", system-ui, sans-serif;
+  --mono: "Martian Mono", "Cascadia Mono", Consolas, monospace;
+  --display: "Redaction", Georgia, serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #131419;
+    --ink: #e6e7ed;
+    --carbon: #8c90ff;
+    --ghost: #3a3c52;
+    --cliff: #f0a948;
+    --cliff-text: #f0a948;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  cursor: default;
+}
+#app { height: 100%; }
+::selection { background: color-mix(in srgb, var(--carbon) 22%, transparent); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; }
+input { font: inherit; color: inherit; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 5px; border: 3px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--ghost); }
+
+.display { font-family: var(--display); font-weight: 400; }
+.mono { font-family: var(--mono); }
+.medium { font-weight: 500; }
+.soft { color: var(--ink-soft); }
+.faint { color: var(--ink-faint); }
+.one-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+/* Pill: filled, rounded. Prominent = carbon. */
+.pill {
+  font-weight: 500; font-size: 12px; padding: 0 14px; height: 30px; border-radius: 7px;
+  background: var(--wash); color: var(--ink); cursor: pointer; white-space: nowrap;
+}
+.pill.prominent { background: var(--carbon); color: var(--ground); }
+.pill:active { opacity: 0.8; }
+
+/* Quiet control: hairline outline at rest, light fill on hover. */
+.quiet {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 0 8px; min-height: 26px; min-width: 26px; border-radius: 6px;
+  border: 1px solid var(--rule); cursor: pointer; white-space: nowrap;
+}
+.quiet.bare { border-color: transparent; }
+.quiet:hover { background: var(--wash); }
+.quiet:active { background: color-mix(in srgb, var(--ghost) 45%, transparent); }
+.quiet:disabled { cursor: default; background: none; }

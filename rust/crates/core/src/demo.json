@@ -1,0 +1,39 @@
+{
+  "sessions": [
+    { "app": "Google Chrome", "bundle": "chrome.exe", "domain": "mail.google.com", "window": "Re: Q4 launch plan", "versions": [
+      { "ago": 14, "text": "Hi Priya,\n\nThanks for pulling this together.", "cliff": false },
+      { "ago": 11, "text": "Hi Priya,\n\nThanks for pulling this together. A few thoughts before Thursday:\n\n1. Let's move the beta invite to the 14th so support has a full week with the new docs.", "cliff": false },
+      { "ago": 6, "text": "Hi Priya,\n\nThanks for pulling this together. A few thoughts before Thursday:\n\n1. Let's move the beta invite to the 14th so support has a full week with the new docs.\n2. The pricing page still says \"unlimited history\". It should say 30 days, adjustable in Settings.\n3. Keep the launch post short: one screenshot, one sentence, one link.\n\nHappy to walk through it tomorrow morning if that's easier.\n\nBest,\nSam", "cliff": true }
+    ]},
+    { "app": "WhatsApp", "bundle": "whatsapp.exe", "domain": null, "window": "Alex", "versions": [
+      { "ago": 31, "text": "running 10 min late, grab us a table by the window?", "cliff": false }
+    ]},
+    { "app": "Notepad", "bundle": "notepad.exe", "domain": null, "window": "Lisbon, three days.txt", "versions": [
+      { "ago": 95, "text": "Tram 28 early, before 9\nPastéis de Belém on a weekday", "cliff": false },
+      { "ago": 80, "text": "Tram 28 early, before 9\nPastéis de Belém on a weekday, not Sunday\nLX Factory market\nSunset at Miradouro da Senhora do Monte", "cliff": false }
+    ]},
+    { "app": "Microsoft Edge", "bundle": "msedge.exe", "domain": "github.com", "window": "Move dev key out of the Keychain · Pull Request #42", "versions": [
+      { "ago": 190, "text": "Local builds are self-signed, so every rebuild looked like a new app to the Keychain and asked for a password. Dev builds now keep the key in a file only your account can read. Developer ID builds still use the Keychain.", "cliff": false }
+    ]},
+    { "app": "Windows Terminal", "bundle": "windowsterminal.exe", "domain": null, "window": "PowerShell", "versions": [
+      { "ago": 230, "text": "git checkout -b release/0.2\ncargo build --release\nnpm run tauri build", "cliff": false }
+    ]},
+    { "app": "Google Chrome", "bundle": "chrome.exe", "domain": "linear.app", "window": "KEY-118 Show real icons for copied items", "versions": [
+      { "ago": 1500, "text": "Favicons come straight from the site you were on, cached on disk. No third-party icon service.", "cliff": false },
+      { "ago": 1490, "text": "Favicons come straight from the site you were on, cached on disk for a week. No third-party icon service, so nothing about your browsing leaves the PC.", "cliff": false }
+    ]},
+    { "app": "Visual Studio Code", "bundle": "code.exe", "domain": null, "window": "diff.rs - keypsake", "versions": [
+      { "ago": 2900, "text": "// Spaces between two added words are highlighted too, so an added phrase reads as one block.", "cliff": false }
+    ]}
+  ],
+  "clips": [
+    { "app": "Google Chrome", "bundle": "chrome.exe", "domain": "github.com", "text": "https://github.com/Paymanshus/keypsake", "ago": 3 },
+    { "app": "Notepad", "bundle": "notepad.exe", "domain": null, "text": "Tram 28 early, before 9", "ago": 18 },
+    { "app": "Windows Terminal", "bundle": "windowsterminal.exe", "domain": null, "text": "cargo build --release", "ago": 40 },
+    { "app": "Outlook", "bundle": "olk.exe", "domain": null, "text": "Your order ships Thursday. Tracking: 1Z 999 AA1 01 2345 6784", "ago": 75 },
+    { "app": "Visual Studio Code", "bundle": "code.exe", "domain": null, "text": "pub fn region(full: &str, baseline: &str) -> String", "ago": 130 },
+    { "app": "Google Chrome", "bundle": "chrome.exe", "domain": "linear.app", "text": "KEY-118", "ago": 200 },
+    { "app": "WhatsApp", "bundle": "whatsapp.exe", "domain": null, "text": "See you at 7, table by the window", "ago": 300 },
+    { "app": "Microsoft Edge", "bundle": "msedge.exe", "domain": "github.com", "text": "#3B3FC4", "ago": 600 }
+  ]
+}
