@@ -227,6 +227,20 @@ final class Store: ObservableObject {
         return out
     }
 
+    /// For keypstats: every version's time and length (no decryption), plus each box's longest version.
+    func statsRows() -> (marks: [(session: Int64, at: Date, length: Int, cliff: Bool)], longest: [Int64: String]) {
+        var marks: [(session: Int64, at: Date, length: Int, cliff: Bool)] = []
+        db.query("SELECT session, created, length, cliff FROM snapshots ORDER BY session, id") { r in
+            marks.append((r.int(0), Date(timeIntervalSince1970: r.double(1)), Int(r.int(2)), r.int(3) != 0))
+        }
+        var longest: [Int64: String] = [:]
+        // SQLite returns the body from the row that holds max(length).
+        db.query("SELECT session, body, max(length) FROM snapshots GROUP BY session") { r in
+            longest[r.int(0)] = open(r.data(1)) ?? ""
+        }
+        return (marks, longest)
+    }
+
     // MARK: typed text writes (called from the capture queue)
     func createSession(_ ctx: SourceContext) -> Int64 {
         let now = Date().timeIntervalSince1970

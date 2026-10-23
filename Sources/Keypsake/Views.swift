@@ -10,11 +10,12 @@ struct MainView: View {
         VStack(spacing: 0) {
             Header()
             Theme.rule.frame(height: 1)
-            if state.tab == .typed {
+            switch state.tab {
+            case .typed:
                 if !state.trusted { PermissionBanner() }
                 TypedPane()
-            } else {
-                CopiedPane()
+            case .copied: CopiedPane()
+            case .stats: StatsPane()
             }
         }
         .foregroundStyle(Theme.ink)
@@ -49,8 +50,9 @@ struct Header: View {
                 .padding(.trailing, 28)
             tab("Typed", .typed)
             tab("Copied", .copied).padding(.leading, 18)
+            tab("keypstats", .stats).padding(.leading, 18)
             Spacer(minLength: 16)
-            search
+            if state.tab != .stats { search }
             rec.padding(.leading, 14)
             Button { state.openSettings() } label: {
                 Image(systemName: "gearshape").font(.system(size: 13)).foregroundStyle(Theme.inkSoft)

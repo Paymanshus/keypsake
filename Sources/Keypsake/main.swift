@@ -3,7 +3,7 @@ import Combine
 import SwiftUI
 
 final class AppState: ObservableObject {
-    enum Tab { case typed, copied }
+    enum Tab { case typed, copied, stats }
     enum Nav { case up, down, enter, delete }
 
     @Published var tab: Tab = .typed
@@ -45,6 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
     func applicationDidFinishLaunching(_ note: Notification) {
         #if DEBUG
         Diff.selfCheck()
+        Stats.selfCheck()
         #endif
         if Demo.on { try? FileManager.default.removeItem(at: Store.supportDir) }
         if Demo.dark { NSApp.appearance = NSAppearance(named: .darkAqua) }
