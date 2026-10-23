@@ -1,0 +1,29 @@
+[package]
+name = "keypsake"
+description = "Everything you type, kept."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+default-run = "keypsake"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+keypsake-core.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+base64 = "0.22"
+dirs = "5"
+image = { version = "0.25", default-features = false, features = ["png", "ico", "jpeg", "gif", "webp", "bmp"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-autostart = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-window-state = "2"
+url = "2"
+
+[target.'cfg(windows)'.dependencies]
+keypsake-platform-windows.workspace = true

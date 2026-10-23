@@ -1,0 +1,36 @@
+# On a version tag, builds the Windows installer and attaches it to that GitHub release
+# (creating a draft release if there isn't one yet). The macOS DMG is built locally with scripts/release.sh.
+name: release-windows
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: rust/app/package-lock.json
+      - run: npm ci && npx tauri build
+        working-directory: rust/app
+      - name: Attach to release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          out="keypsake-${version}-x64-setup.exe"
+          cp rust/target/release/bundle/nsis/*-setup.exe "$out"
+          sha256sum "$out"
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --draft --title "keypsake $version" --notes ""
+          gh release upload "$TAG" "$out" --clobber
