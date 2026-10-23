@@ -164,13 +164,45 @@ struct TypedPane: View {
     @State private var snaps: [Snapshot] = []
     @State private var version: Int64?
 
+    @AppStorage("typedSort") private var sort = TypedSort.recent
+    @State private var appFilter: String?
+
+    enum TypedSort: String, CaseIterable {
+        case recent, newest, oldest, longest
+        var label: String {
+            switch self {
+            case .recent: "Last edited"
+            case .newest: "Newest"
+            case .oldest: "Oldest"
+            case .longest: "Longest"
+            }
+        }
+    }
+
     private var items: [SessionItem] {
         let q = state.query.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !q.isEmpty else { return store.sessions }
-        return store.sessions.filter {
-            $0.text.lowercased().contains(q) || $0.title.lowercased().contains(q)
-                || $0.window.lowercased().contains(q) || $0.app.lowercased().contains(q)
+        var out = store.sessions
+        if let app = appFilter { out = out.filter { $0.app == app } }
+        if !q.isEmpty {
+            out = out.filter {
+                $0.text.lowercased().contains(q) || $0.title.lowercased().contains(q)
+                    || $0.window.lowercased().contains(q) || $0.app.lowercased().contains(q)
+            }
         }
+        switch sort {
+        case .recent: return out // store keeps sessions by last edit
+        case .newest: return out.sorted { $0.created > $1.created }
+        case .oldest: return out.sorted { $0.created < $1.created }
+        case .longest: return out.sorted { $0.text.count > $1.text.count }
+        }
+    }
+
+    /// Apps with typed text, most used first.
+    private var apps: [(name: String, count: Int)] {
+        Dictionary(grouping: store.sessions, by: \.app)
+            .map { (name: $0.key, count: $0.value.count) }
+            .filter { !$0.name.isEmpty }
+            .sorted { $0.count != $1.count ? $0.count > $1.count : $0.name < $1.name }
     }
 
     var body: some View {
@@ -180,38 +212,101 @@ struct TypedPane: View {
             if store.sessions.isEmpty {
                 EmptyNote(line: "Type anywhere. It shows up here.",
                           sub: "Whatever you type into a text box, in any app, is kept for \(retention) days.")
-            } else if list.isEmpty {
-                EmptyNote(line: "Nothing matches “\(state.query)”.")
             } else {
                 HStack(spacing: 0) {
-                    ScrollViewReader { proxy in
-                        ScrollView {
-                            LazyVStack(spacing: 0) {
-                                ForEach(list) { item in
-                                    SessionRow(item: item, selected: item.id == current?.id,
-                                               copied: state.flash == item.id) { state.copy(item.text, id: item.id) }
-                                        .id(item.id)
-                                        .onTapGesture { selection = item.id }
-                                        .contextMenu {
-                                            Button("Copy latest text") { state.copy(item.text, id: item.id) }
-                                            Button("Delete") { store.deleteSession(item.id) }
-                                        }
+                    VStack(spacing: 0) {
+                        filterBar
+                        ScrollViewReader { proxy in
+                            ScrollView {
+                                LazyVStack(spacing: 0) {
+                                    ForEach(list) { item in
+                                        SessionRow(item: item, selected: item.id == current?.id,
+                                                   copied: state.flash == item.id) { state.copy(item.text, id: item.id) }
+                                            .id(item.id)
+                                            .onTapGesture { selection = item.id }
+                                            .contextMenu {
+                                                Button("Copy latest text") { state.copy(item.text, id: item.id) }
+                                                Button("Show only \(item.app)") { appFilter = item.app }
+                                                Button("Delete") { store.deleteSession(item.id) }
+                                            }
+                                    }
                                 }
                             }
+                            .onChange(of: selection) { if let s = selection { proxy.scrollTo(s) } }
                         }
-                        .onChange(of: selection) { if let s = selection { proxy.scrollTo(s) } }
                     }
                     .frame(width: 310)
                     Theme.rule.frame(width: 1)
                     if let current {
                         SessionDetail(item: current, snaps: snaps, version: $version,
                                       copied: state.flash == current.id, copy: { copyVersion(current) })
+                    } else if !state.query.isEmpty {
+                        EmptyNote(line: "Nothing matches “\(state.query)”.")
+                    } else {
+                        EmptyNote(line: "Nothing from \(appFilter ?? "this app") yet.")
                     }
                 }
                 .task(id: "\(current?.id ?? 0)-\(current?.updated.timeIntervalSince1970 ?? 0)") { load(current) }
                 .onReceive(state.nav) { handle($0, list: list, current: current) }
             }
         }
+    }
+
+    /// One quiet line above the list: app filter on the left, sort on the right.
+    private var filterBar: some View {
+        HStack(spacing: 2) {
+            Menu {
+                Picker("App", selection: $appFilter) {
+                    Text("All apps").tag(String?.none)
+                    Divider()
+                    ForEach(apps, id: \.name) { app in
+                        Text("\(app.name)  (\(app.count))").tag(Optional(app.name))
+                    }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+            } label: {
+                menuLabel(appFilter ?? "All apps", active: appFilter != nil)
+            }
+            .help("Filter by app")
+            if appFilter != nil {
+                Button { appFilter = nil } label: {
+                    Image(systemName: "xmark").font(.system(size: 8, weight: .semibold)).foregroundStyle(Theme.inkFaint)
+                }
+                .buttonStyle(QuietButton(outlined: false, height: 18))
+                .help("Show all apps")
+            }
+            Spacer(minLength: 8)
+            Menu {
+                Picker("Sort", selection: $sort) {
+                    ForEach(TypedSort.allCases, id: \.self) { Text($0.label).tag($0) }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+            } label: {
+                menuLabel(sort.label, active: false)
+            }
+            .help("Sort")
+        }
+        .menuStyle(.button)
+        .buttonStyle(.plain)
+        .menuIndicator(.hidden)
+        .padding(.horizontal, 12)
+        .frame(height: 30)
+        .overlay(alignment: .bottom) { Theme.rule.opacity(0.5).frame(height: 1) }
+    }
+
+    private func menuLabel(_ text: String, active: Bool) -> some View {
+        HStack(spacing: 4) {
+            Text(text).lineLimit(1)
+            Image(systemName: "chevron.down").font(.system(size: 7, weight: .semibold))
+        }
+        .font(Theme.mono(10.5))
+        .foregroundStyle(active ? Theme.ink : Theme.inkFaint)
+        .padding(.horizontal, 4)
+        .frame(height: 22)
+        .contentShape(Rectangle())
+        .pointingHand()
     }
 
     private func load(_ item: SessionItem?) {
