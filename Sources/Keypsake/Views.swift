@@ -164,12 +164,36 @@ struct TypedPane: View {
     @State private var snaps: [Snapshot] = []
     @State private var version: Int64?
 
+    @AppStorage("typedSort") private var sort = TypedSort.recent
+    @State private var appFilter: String?
+
+    enum TypedSort: String, CaseIterable {
+        case recent, newest, oldest, longest
+        var label: String {
+            switch self {
+            case .recent: "Last edited"
+            case .newest: "Newest"
+            case .oldest: "Oldest"
+            case .longest: "Longest"
+            }
+        }
+    }
+
     private var items: [SessionItem] {
         let q = state.query.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !q.isEmpty else { return store.sessions }
-        return store.sessions.filter {
-            $0.text.lowercased().contains(q) || $0.title.lowercased().contains(q)
-                || $0.window.lowercased().contains(q) || $0.app.lowercased().contains(q)
+        var out = store.sessions
+        if let app = appFilter { out = out.filter { $0.app == app } }
+        if !q.isEmpty {
+            out = out.filter {
+                $0.text.lowercased().contains(q) || $0.title.lowercased().contains(q)
+                    || $0.window.lowercased().contains(q) || $0.app.lowercased().contains(q)
+            }
+        }
+        switch sort {
+        case .recent: return out // store keeps sessions by last edit
+        case .newest: return out.sorted { $0.created > $1.created }
+        case .oldest: return out.sorted { $0.created < $1.created }
+        case .longest: return out.sorted { $0.text.count > $1.text.count }
         }
     }
 
@@ -180,37 +204,58 @@ struct TypedPane: View {
             if store.sessions.isEmpty {
                 EmptyNote(line: "Type anywhere. It shows up here.",
                           sub: "Whatever you type into a text box, in any app, is kept for \(retention) days.")
-            } else if list.isEmpty {
-                EmptyNote(line: "Nothing matches “\(state.query)”.")
             } else {
                 HStack(spacing: 0) {
-                    ScrollViewReader { proxy in
-                        ScrollView {
-                            LazyVStack(spacing: 0) {
-                                ForEach(list) { item in
-                                    SessionRow(item: item, selected: item.id == current?.id,
-                                               copied: state.flash == item.id) { state.copy(item.text, id: item.id) }
-                                        .id(item.id)
-                                        .onTapGesture { selection = item.id }
-                                        .contextMenu {
-                                            Button("Copy latest text") { state.copy(item.text, id: item.id) }
-                                            Button("Delete") { store.deleteSession(item.id) }
-                                        }
+                    VStack(spacing: 0) {
+                        filterBar
+                        ScrollViewReader { proxy in
+                            ScrollView {
+                                LazyVStack(spacing: 0) {
+                                    ForEach(list) { item in
+                                        SessionRow(item: item, selected: item.id == current?.id,
+                                                   copied: state.flash == item.id) { state.copy(item.text, id: item.id) }
+                                            .id(item.id)
+                                            .onTapGesture { selection = item.id }
+                                            .contextMenu {
+                                                Button("Copy latest text") { state.copy(item.text, id: item.id) }
+                                                Button("Show only \(item.app)") { appFilter = item.app }
+                                                Button("Delete") { store.deleteSession(item.id) }
+                                            }
+                                    }
                                 }
                             }
+                            .onChange(of: selection) { if let s = selection { proxy.scrollTo(s) } }
                         }
-                        .onChange(of: selection) { if let s = selection { proxy.scrollTo(s) } }
                     }
                     .frame(width: 310)
                     Theme.rule.frame(width: 1)
                     if let current {
                         SessionDetail(item: current, snaps: snaps, version: $version,
                                       copied: state.flash == current.id, copy: { copyVersion(current) })
+                    } else if !state.query.isEmpty {
+                        EmptyNote(line: "Nothing matches “\(state.query)”.")
+                    } else {
+                        EmptyNote(line: "Nothing from \(appFilter ?? "this app") yet.")
                     }
                 }
                 .task(id: "\(current?.id ?? 0)-\(current?.updated.timeIntervalSince1970 ?? 0)") { load(current) }
                 .onReceive(state.nav) { handle($0, list: list, current: current) }
             }
+        }
+    }
+
+    private var filterBar: some View {
+        AppFilterBar(apps: appCounts(store.sessions.map(\.app)), filter: $appFilter) {
+            Menu {
+                Picker("Sort", selection: $sort) {
+                    ForEach(TypedSort.allCases, id: \.self) { Text($0.label).tag($0) }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+            } label: {
+                menuLabel(sort.label, active: false)
+            }
+            .help("Sort")
         }
     }
 
@@ -473,11 +518,14 @@ struct CopiedPane: View {
     @EnvironmentObject var state: AppState
     @AppStorage("clipLimit") private var clipLimit = 50
     @State private var selection: Int64?
+    @State private var appFilter: String?
 
     private var items: [Clip] {
         let q = state.query.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !q.isEmpty else { return store.clips }
-        return store.clips.filter { $0.text.lowercased().contains(q) || $0.app.lowercased().contains(q) || ($0.domain ?? "").contains(q) }
+        var out = store.clips
+        if let app = appFilter { out = out.filter { $0.app == app } }
+        guard !q.isEmpty else { return out }
+        return out.filter { $0.text.lowercased().contains(q) || $0.app.lowercased().contains(q) || ($0.domain ?? "").contains(q) }
     }
 
     var body: some View {
@@ -486,30 +534,36 @@ struct CopiedPane: View {
         Group {
             if store.clips.isEmpty {
                 EmptyNote(line: "Copy anything. It lands here.", sub: "Your last \(clipLimit) copies are kept. Passwords from password managers are skipped.")
-            } else if list.isEmpty {
-                EmptyNote(line: "Nothing matches “\(state.query)”.")
             } else {
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            ForEach(Array(list.enumerated()), id: \.element.id) { i, clip in
-                                ClipRow(clip: clip, index: i, selected: clip.id == current?.id, copied: state.flash == clip.id)
-                                    .id(clip.id)
-                                    .onTapGesture {
-                                        selection = clip.id
-                                        state.copy(clip.text, id: clip.id)
+                VStack(spacing: 0) {
+                    AppFilterBar(apps: appCounts(store.clips.map(\.app)), filter: $appFilter)
+                    if list.isEmpty {
+                        EmptyNote(line: state.query.isEmpty ? "Nothing from \(appFilter ?? "this app") yet." : "Nothing matches “\(state.query)”.")
+                    } else {
+                        ScrollViewReader { proxy in
+                            ScrollView {
+                                LazyVStack(spacing: 0) {
+                                    ForEach(Array(list.enumerated()), id: \.element.id) { i, clip in
+                                        ClipRow(clip: clip, index: i, selected: clip.id == current?.id, copied: state.flash == clip.id)
+                                            .id(clip.id)
+                                            .onTapGesture {
+                                                selection = clip.id
+                                                state.copy(clip.text, id: clip.id)
+                                            }
+                                            .contextMenu {
+                                                Button("Copy") { state.copy(clip.text, id: clip.id) }
+                                                Button("Show only \(clip.app)") { appFilter = clip.app }
+                                                Button("Delete") { store.deleteClip(clip.id) }
+                                            }
                                     }
-                                    .contextMenu {
-                                        Button("Copy") { state.copy(clip.text, id: clip.id) }
-                                        Button("Delete") { store.deleteClip(clip.id) }
-                                    }
+                                }
                             }
+                            .onChange(of: selection) { if let s = selection { proxy.scrollTo(s) } }
                         }
+                        .background(numberShortcuts(list))
+                        .onReceive(state.nav) { handle($0, list: list, current: current) }
                     }
-                    .onChange(of: selection) { if let s = selection { proxy.scrollTo(s) } }
                 }
-                .background(numberShortcuts(list))
-                .onReceive(state.nav) { handle($0, list: list, current: current) }
             }
         }
     }
@@ -577,6 +631,73 @@ struct ClipRow: View {
 }
 
 // MARK: - Pieces
+
+/// One quiet line above a list: app filter on the left, optional extra controls (sort) on the right.
+struct AppFilterBar<Trailing: View>: View {
+    let apps: [(name: String, count: Int)]
+    @Binding var filter: String?
+    @ViewBuilder var trailing: Trailing
+
+    var body: some View {
+        HStack(spacing: 2) {
+            Menu {
+                Picker("App", selection: $filter) {
+                    Text("All apps").tag(String?.none)
+                    Divider()
+                    ForEach(apps, id: \.name) { app in
+                        Text("\(app.name)  (\(app.count))").tag(Optional(app.name))
+                    }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+            } label: {
+                menuLabel(filter ?? "All apps", active: filter != nil)
+            }
+            .help("Filter by app")
+            if filter != nil {
+                Button { filter = nil } label: {
+                    Image(systemName: "xmark").font(.system(size: 8, weight: .semibold)).foregroundStyle(Theme.inkFaint)
+                }
+                .buttonStyle(QuietButton(outlined: false, height: 18))
+                .help("Show all apps")
+            }
+            Spacer(minLength: 8)
+            trailing
+        }
+        .menuStyle(.button)
+        .buttonStyle(.plain)
+        .menuIndicator(.hidden)
+        .padding(.horizontal, 12)
+        .frame(height: 30)
+        .overlay(alignment: .bottom) { Theme.rule.opacity(0.5).frame(height: 1) }
+    }
+}
+
+/// Apps by how often they appear, most first.
+func appCounts(_ names: [String]) -> [(name: String, count: Int)] {
+    Dictionary(grouping: names.filter { !$0.isEmpty }, by: { $0 })
+        .map { (name: $0.key, count: $0.value.count) }
+        .sorted { $0.count != $1.count ? $0.count > $1.count : $0.name < $1.name }
+}
+
+func menuLabel(_ text: String, active: Bool) -> some View {
+    HStack(spacing: 4) {
+        Text(text).lineLimit(1)
+        Image(systemName: "chevron.down").font(.system(size: 7, weight: .semibold))
+    }
+    .font(Theme.mono(10.5))
+    .foregroundStyle(active ? Theme.ink : Theme.inkFaint)
+    .padding(.horizontal, 4)
+    .frame(height: 22)
+    .contentShape(Rectangle())
+    .pointingHand()
+}
+
+extension AppFilterBar where Trailing == EmptyView {
+    init(apps: [(name: String, count: Int)], filter: Binding<String?>) {
+        self.init(apps: apps, filter: filter) { EmptyView() }
+    }
+}
 
 struct SourceIcon: View {
     let bundle: String?
