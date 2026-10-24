@@ -33,11 +33,17 @@ Updates signed with the same identity keep your Accessibility setting.
 - **Versions, and the moment it all went wrong.** As you write, keypsake keeps versions. If a box suddenly empties or loses most of its text, the version right before is saved and marked in amber ("box was cleared right after this"). That one shows first, because that's the one you want.
 - **Changes anyone can read.** Switch a version to *Changes* to see it against the one before: added words highlighted, removed words struck through, plus a plain summary like "40 words added".
 - **Copied.** Your last 25 to 500 copies (you choose), with the source app or site. Click or press ⌘1–9 to copy one back.
+- **keypstats.** How much you typed and when you were most key-krazy, on a heat map by hour and weekday. The biggest thing you typed (a quip, a sentence, a paragraph, all the way up to a novella; exactly 14 lines is a sonnet), your favourite app, your favourite and fanciest word, the box you kept going back to, and how many times keypsake had your back. Today, 7 days, 30 days or everything kept.
 - **Menu bar and Dock.** Lives in both. ⌃⌥K opens it, ⌃⌥P pauses recording.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/copied-dark.png">
   <img src="docs/copied.png" alt="Copied tab: clipboard history with source icons and ⌘1–9 shortcuts">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/stats-dark.png">
+  <img src="docs/stats.png" alt="keypstats tab: words typed this week, and a heat map of when you were most key-krazy">
 </picture>
 
 ## Privacy
@@ -47,6 +53,7 @@ It's a keylogger you run on purpose, so here's exactly what happens to your stuf
 - History is encrypted (AES-GCM) and stored only on your Mac. Nothing is sent anywhere.
 - Password fields, password managers and items marked as concealed on the clipboard are never recorded.
 - Terminals record your keystrokes (the commands you typed), not their whole scrollback.
+- keypstats is worked out on your Mac from the history it already keeps. Nothing extra is recorded.
 - Site icons are fetched from the site you were on and cached. No third-party icon service.
 - Typed text is deleted after 7, 30, 90 or 365 days (your choice). Pause anytime, or delete everything in Settings.
 
@@ -72,6 +79,7 @@ If keypsake is switched on in that list but still asks, the entry belongs to an 
 - `Capture.swift`: a global key monitor triggers reads of the focused text box through the Accessibility API. If an app does not expose its text (Google Docs, some Electron apps, terminals), the text is rebuilt from keystrokes. A "cliff" (sudden large drop in length) saves the version before it.
 - `Store.swift`: SQLite with every text field sealed by CryptoKit. Developer ID builds keep the key in the Keychain; local self-signed builds keep it in a file only your user can read, because each local build would otherwise trigger a Keychain prompt.
 - `Diff.swift`: word-level diff on Swift's `CollectionDifference`.
+- `Stats.swift`: keypstats. Words typed come from how much each box grew between versions, so only each box's longest version is decrypted. "Fanciest word" is the longest word you used that passes macOS spell check.
 - `Views.swift`, `Settings.swift`: SwiftUI hosted in AppKit windows.
 
 Design: Redaction (display), Martian Grotesk (UI) and Martian Mono (meta), all SIL OFL and bundled in `Resources/Fonts`. Palette: fog `#ECEEF2`, ink `#1B1C22`, carbon `#3B3FC4`, amber `#D98A2B` reserved for "text was lost here".
