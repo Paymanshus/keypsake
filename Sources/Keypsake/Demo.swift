@@ -15,7 +15,7 @@ extension Store {
             S(app: "Safari", bundle: "com.apple.Safari", domain: "mail.google.com", window: "Re: Q4 launch plan", versions: [
                 (14, "Hi team,\n\nThanks for pulling this together.", false),
                 (11, "Hi team,\n\nThanks for pulling this together. A few thoughts before Thursday:\n\n1. Let's move the beta invite to the 14th so support has a full week with the new docs.", false),
-                (6, "Hi team,\n\nThanks for pulling this together. A few thoughts before Thursday:\n\n1. Let's move the beta invite to the 14th so support has a full week with the new docs.\n2. The pricing page still says \"unlimited history\". It should say 30 days, adjustable in Settings.\n3. Keep the launch post short: one screenshot, one sentence, one link.\n\nHappy to walk through it tomorrow morning if that's easier.\n\nBest", true),
+                (6, "Hi team,\n\nThanks for pulling this together. A few thoughts before Thursday:\n\n1. Let's move the beta invite to the 14th so support has a full week with the new docs.\n2. The pricing page still says \"unlimited history\". It should say 30 days, adjustable in Settings.\n3. Keep the launch post short: one screenshot, one sentence, one link.\n\nHappy to walk through it tomorrow morning if that's easier.\n\nThanks!", true),
             ]),
             S(app: "Messages", bundle: "com.apple.MobileSMS", domain: nil, window: "Friday dinner", versions: [
                 (31, "running 10 min late, grab us a table by the window?", false),

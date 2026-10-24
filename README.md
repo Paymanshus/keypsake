@@ -1,10 +1,14 @@
 <p align="center">
-  <img src="docs/keypsake.gif" alt="keypsake: typed text gets cleared, keypsake keeps it" width="640">
+  <img src="docs/keypsake.gif" alt="A long prompt in Claude Code dies to a connection error, then keypsake brings it back" width="640">
 </p>
 
 # keypsake
 
-Everything you type, kept. A small macOS app that quietly saves what you type into any text box, in any app, so a crashed tab, a stray click or a cleared form never costs you a long piece of writing again. It also keeps a short clipboard history.
+**typed it? keyp it.**
+
+A small macOS app that saves what you type into any text box, in any app. For the 40-minute prompt that hit a connection error. The Teams message that vanished when you went back to fix one word. The YouTube search you swore you'd run after this video. ~~ffs~~ for keyp's sake.
+
+It also keeps your clipboard history, the other place things go to die.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/typed-dark.png">
@@ -26,7 +30,7 @@ Updates signed with the same identity keep your Accessibility setting.
 ## What it does
 
 - **Typed.** One entry per text box you typed into, with the app or website, its real icon and the window title. Only what you typed this time is kept: text that was already in a note or document stays out.
-- **Versions, and the moment text was lost.** As you write, keypsake keeps versions. If a box suddenly empties or loses most of its text, the version just before is saved and marked in amber ("box was cleared right after this"), and it is the one shown first.
+- **Versions, and the moment it all went wrong.** As you write, keypsake keeps versions. If a box suddenly empties or loses most of its text, the version right before is saved and marked in amber ("box was cleared right after this"). That one shows first, because that's the one you want.
 - **Changes anyone can read.** Switch a version to *Changes* to see it against the one before: added words highlighted, removed words struck through, plus a plain summary like "40 words added".
 - **Copied.** Your last 25 to 500 copies (you choose), with the source app or site. Click or press ⌘1–9 to copy one back.
 - **Menu bar and Dock.** Lives in both. ⌃⌥K opens it, ⌃⌥P pauses recording.
@@ -37,6 +41,8 @@ Updates signed with the same identity keep your Accessibility setting.
 </picture>
 
 ## Privacy
+
+It's a keylogger you run on purpose, so here's exactly what happens to your stuff.
 
 - History is encrypted (AES-GCM) and stored only on your Mac. Nothing is sent anywhere.
 - Password fields, password managers and items marked as concealed on the clipboard are never recorded.

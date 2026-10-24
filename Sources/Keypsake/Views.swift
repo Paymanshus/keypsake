@@ -204,7 +204,7 @@ struct TypedPane: View {
         let current = list.first { $0.id == selection } ?? list.first
         Group {
             if store.sessions.isEmpty {
-                EmptyNote(line: "Type anywhere. It shows up here.",
+                EmptyNote(line: "Type anywhere. If it vanishes, it's here.",
                           sub: "Whatever you type into a text box, in any app, is kept for \(retention) days.")
             } else {
                 HStack(spacing: 0) {
